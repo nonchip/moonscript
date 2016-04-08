@@ -45,24 +45,18 @@ do
     return moon_type(val)
   end
 end
-local has_value
-has_value = function(node)
-  if ntype(node) == "chain" then
-    local ctype = ntype(node[#node])
-    return ctype ~= "call" and ctype ~= "colon"
-  else
-    return true
+local value_can_be_statement
+value_can_be_statement = function(node)
+  if not (ntype(node) == "chain") then
+    return false
   end
+  return ntype(node[#node]) == "call"
 end
 local is_value
 is_value = function(stm)
   local compile = require("moonscript.compile")
   local transform = require("moonscript.transform")
   return compile.Block:is_value(stm) or transform.Value:can_transform(stm)
-end
-local comprehension_has_value
-comprehension_has_value = function(comp)
-  return is_value(comp[2])
 end
 local value_is_singular
 value_is_singular = function(node)
@@ -310,6 +304,9 @@ local smart_node
 smart_node = function(node)
   return setmetatable(node, smart_node_mt[ntype(node)])
 end
+local NOOP = {
+  "noop"
+}
 return {
   ntype = ntype,
   smart_node = smart_node,
@@ -319,8 +316,8 @@ return {
   manual_return = manual_return,
   cascading = cascading,
   value_is_singular = value_is_singular,
-  comprehension_has_value = comprehension_has_value,
-  has_value = has_value,
+  value_can_be_statement = value_can_be_statement,
   mtype = mtype,
-  terminating = terminating
+  terminating = terminating,
+  NOOP = NOOP
 }
